@@ -1,0 +1,33 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "magmod:block/magnet",
+      "x": 90,
+      "uvlock": true
+    },
+    "facing=east": {
+      "model": "magmod:block/magnet",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=north": {
+      "model": "magmod:block/magnet",
+      "uvlock": true
+    },
+    "facing=south": {
+      "model": "magmod:block/magnet",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=up": {
+      "model": "magmod:block/magnet",
+      "x": 270,
+      "uvlock": true
+    },
+    "facing=west": {
+      "model": "magmod:block/magnet",
+      "y": 270,
+      "uvlock": true
+    }
+  }
+}
