@@ -1,7 +1,10 @@
 package net.jamisonwolsborn.magmod.block;
 
+import net.jamisonwolsborn.magmod.procedures.MagnetBlockIsPlaced;
 import net.minecraft.block.*;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemStack;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
@@ -14,6 +17,7 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 public class MagnetBlock extends FacingBlock {
     public static final DirectionProperty FACING = Properties.FACING;
@@ -33,6 +37,13 @@ public class MagnetBlock extends FacingBlock {
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         builder.add(FACING);
+    }
+
+
+    @Override
+    public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
+        super.onPlaced(world, pos, state, placer, itemStack);
+        MagnetBlockIsPlaced.execute(world, pos.getX(), pos.getY(), pos.getZ());
     }
 
     public MagnetBlock(Settings settings) {
