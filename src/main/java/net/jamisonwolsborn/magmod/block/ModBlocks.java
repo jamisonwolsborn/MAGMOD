@@ -13,7 +13,7 @@ import net.jamisonwolsborn.magmod.MagMod;
 
 public class ModBlocks {
     public static final Block MAGNET = registerBlock("magnet",
-            new Block(FabricBlockSettings.of(Material.STONE).strength(4.0f))); // add custom tool to break with tags here
+            new MagnetBlock(FabricBlockSettings.of(Material.METAL).strength(4.0f))); // add custom tool to break with tags here
 
     public static Block registerBlock(String name, Block block){
         registerBlockItem(name, block);
