@@ -2,36 +2,44 @@ from json.tool import main
 import magpylib as magpy
 import sqlite3
 import pandas as pd
+import numpy as np
 
+# gets the magnetic moments and coordinates of any magnet blocks that are immediate neighbors
 def look_at_neighbors(x, y, z,bounds):
-    moments = []
+    moments = np.empty([0,3])
     neighbors = pos[(pos[0] <= x + bounds) & (pos[0] >= x - bounds) &
                      (pos[1] <= y + bounds) & (pos[1] >= y - bounds) &
                      (pos[2] <= z + bounds) & (pos[2] >= z - bounds)]
     
     for i in neighbors.index:
-        moments.append(m.loc[i])
+        moments = np.append(moments, [m.loc[i]], axis = 0)
     return moments, neighbors
 
+# finds the magnet blocks that are in the 27 3x3x3 block cubes and returns the 27 center points
+# also returns the 27 aggregated magnetic moments of the blocks
 def a_block_away(x, y, z, bounds):    
-    moments = []
-    centers = []
+    moments = np.empty([0,3])
+    centers = np.empty([0,3])
     for i in range(-1,2):
         for j in range(-1,2):
             for k in range(-1,2):
                 block = pos[(pos[0] <= x + bounds + 4 * i) & (pos[0] >= x - bounds + 4 * i) &
                             (pos[1] <= y + bounds + 4 * j) & (pos[1] >= y - bounds + 4 * j) &
                             (pos[2] <= z + bounds + 4 * k) & (pos[2] >= z - bounds + 4 * k)]
-                moment = m.loc[block.index].sum()
-                moments.append(moment)
+                moment = m.loc[block.index].sum().to_numpy()
+                moments = np.append(moments, [moment], axis = 0)
          
     for i in range(-1,2):
         for j in range(-1,2):
             for k in range(-1,2):
-                centers.append([x + 4*i, y + 4*j, z + 4*k])
+                center = np.array([(x + 4*i), (y + 4*j), (z + 4*k)])
+                centers = np.append(centers, [center], axis = 0)
     
+    centers = np.delete(centers, 13, 0)
+    moments = np.delete(moments, 13, 0)
     return moments, centers
 
+# combines neighbors and 3x3x3 cube centers to the 
 def prepare_df(x,y,z,bounds):
     
     moments, centers = a_block_away(x,y,z,bounds)
@@ -69,7 +77,7 @@ def main():
     m = df['m'].str.split(",", expand=True).astype(float)
 
     coords = get_coords(pos)
-    mag_fields = []
+    mag_fields = np.empty([0,3])
     for i in coords.index:
         x = coords["x"].loc[i]
         y = coords["y"].loc[i]
@@ -78,11 +86,15 @@ def main():
         magnets = []
         for i in centers.index:
             magnets.append(magpy.magnet.Cuboid(magnetization=(moments[0].loc[i], moments[1].loc[i], moments[2].loc[i]),
-                                            dimension = (1000, 1000, 1000),
-                                            position=(centers[0].loc[i]*1000, centers[1].loc[i]*1000, centers[2].loc[i]*1000)))
+                                               dimension = (1000, 1000, 1000),
+                                               position=(centers[0].loc[i]*1000, centers[1].loc[i]*1000, centers[2].loc[i]*1000)))
         sensor = magpy.Sensor(position=(x*1000, y*1000, z*1000))
         B = sensor.getB(magnets, sumup = True)
-        mag_fields.append(B)
+        mag_fields = np.append(mag_fields, [B], axis = 0)
+    
+    coords_df = pd.DataFrame(coords)
+    mag_field_df = pd.DataFrame(mag_fields)
+    output_df = coords_df.join(mag_field_df)
 
     coords_df = pd.DataFrame(coords)
     mag_field_df = pd.DataFrame(mag_fields)
