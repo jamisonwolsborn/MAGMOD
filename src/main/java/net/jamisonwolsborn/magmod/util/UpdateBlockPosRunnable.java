@@ -4,12 +4,11 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.MessageType;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.sql.SQLException;
 
-import static net.jamisonwolsborn.magmod.util.MagneticField.getMagField;
+import static net.jamisonwolsborn.magmod.util.MagneticField.initializeSQL;
 import static net.jamisonwolsborn.magmod.util.MagneticField.update_block_placement;
 
 public class UpdateBlockPosRunnable implements java.lang.Runnable {
@@ -34,11 +33,8 @@ public class UpdateBlockPosRunnable implements java.lang.Runnable {
         MinecraftClient mc = MinecraftClient.getInstance();
         Text message = Text.of("Running " + threadName);
         mc.inGameHud.addChatMessage(MessageType.SYSTEM, message, mc.player.getUuid());
-        try {
-            update_block_placement(world_, pos_);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+
+        initializeSQL(world_, pos_);
 
         Text message_ = Text.of("Thread " + threadName + " exiting.");
         mc.inGameHud.addChatMessage(MessageType.SYSTEM, message_, mc.player.getUuid());

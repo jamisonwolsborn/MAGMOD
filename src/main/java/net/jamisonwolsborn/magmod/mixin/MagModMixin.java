@@ -26,19 +26,18 @@ public class MagModMixin {
             connection = DriverManager.getConnection("jdbc:sqlite:database.db");
             Statement statement = connection.createStatement();
             statement.setQueryTimeout(30);  // set timeout to 30 sec.
-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS mag_positions (pos VARCHAR(255), m VARCHAR(255), Timestamp DATETIME)");
-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS mag_field (pos VARCHAR(255), mag_field VARCHAR(255))");
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS 'mag' ('pos_x' INT, 'pos_y' INT, 'pos_z' INT, 'field_x' FLOAT, 'field_y' FLOAT, 'field_z' FLOAT, 'Timestamp' DATETIME)");
         } catch (SQLException e) {
             // if the error message is "out of memory",
             // it probably means no database file is found
-            System.err.println(e.getMessage());
+            MagMod.LOGGER.info(e.getMessage());
         } finally {
             try {
                 if (connection != null)
                     connection.close();
             } catch (SQLException e) {
                 // connection close failed.
-                System.err.println(e.getMessage());
+                MagMod.LOGGER.info(e.getMessage());
             }
         }
         MagMod.LOGGER.info("This line is printed by an example mod mixin!");

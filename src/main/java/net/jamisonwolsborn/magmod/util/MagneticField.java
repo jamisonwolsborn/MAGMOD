@@ -1,29 +1,22 @@
 package net.jamisonwolsborn.magmod.util;
 
 import net.jamisonwolsborn.magmod.MagMod;
-import net.jamisonwolsborn.magmod.block.MagnetBlock;
 import net.jamisonwolsborn.magmod.block.ModBlocks;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.FacingBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.MessageType;
-import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Position;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import org.lwjgl.system.CallbackI;
+import tech.tablesaw.api.Table;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Properties;
-import java.util.Vector;
 
 import static net.jamisonwolsborn.magmod.block.MagnetBlock.FACING;
 
@@ -36,37 +29,160 @@ public class MagneticField {
 
     }
 
-    public static void update_block_placement(World world, BlockPos pos) throws SQLException {
+    public static Direction getDirection(World world, BlockPos pos) {
         BlockState bs = world.getBlockState(pos);
         Direction dir = bs.get(FACING);
+        return dir;
+    }
 
-        Vec3d mag_moment;
+    public static Statement initializeSQL(World world, BlockPos pos) {
+        Connection connection = null;
+        Statement statement = null;
+        try {
+            // create a database connection
+            connection = DriverManager.getConnection("jdbc:sqlite:database.db");
+            statement = connection.createStatement();
+            statement.setQueryTimeout(30);
+
+            update_block_placement(world, pos, statement);
+
+        } catch (SQLException e) {
+            // if the error message is "out of memory",
+            // it probably means no database file is found
+            MagMod.LOGGER.info(e.getMessage());
+        } finally {
+            try {
+                if (connection != null)
+                    connection.close();
+            } catch (SQLException e) {
+                // connection close failed.
+                MagMod.LOGGER.info(e.getMessage());
+            }
+        }
+        return statement;
+    }
+
+    public static void update_block_placement(World world, BlockPos pos, Statement statement) throws SQLException {
+
+        Direction dir = getDirection(world, pos);
+        int x = pos.getX();
+        int y = pos.getY();
+        int z = pos.getZ();
 
         if (dir == Direction.EAST) {
-            mag_moment = new Vec3d(mag_dipole_scalar, 0, 0);
+            Table t = Table.read().file("extra_files/pos_x.csv");
+            for (int i = 0; i < t.rowCount(); i++) {
+                int pos_x = (int) t.numberColumn("x").get(i);
+                int pos_y = (int) t.numberColumn("y").get(i);
+                int pos_z = (int) t.numberColumn("z").get(i);
+                Number field_x_num = t.numberColumn("x_field").get(i);
+                float field_x = field_x_num.floatValue();
+                Number field_y_num = t.numberColumn("y_field").get(i);
+                float field_y = field_y_num.floatValue();
+                Number field_z_num = t.numberColumn("z_field").get(i);
+                float field_z = field_z_num.floatValue();
+                MagnetBlockPlacedSQL mp = new MagnetBlockPlacedSQL(dir, pos_x, pos_y, pos_z, field_x, field_y, field_z, statement);
+                mp.main();
+            }
         } else if (dir == Direction.WEST) {
-            mag_moment = new Vec3d(-mag_dipole_scalar, 0, 0);
+            Table t = Table.read().file("extra_files/neg_x.csv");
+            for (int i = 0; i < t.rowCount(); i++) {
+                int pos_x_num = (int) t.numberColumn("x").get(i);
+                int pos_y_num = (int) t.numberColumn("y").get(i);
+                int pos_z_num = (int) t.numberColumn("z").get(i);
+                int pos_x = x + pos_x_num;
+                int pos_y = y + pos_y_num;
+                int pos_z = z + pos_z_num;
+
+                Number field_x_num = t.numberColumn("x_field").get(i);
+                float field_x = field_x_num.floatValue();
+                Number field_y_num = t.numberColumn("y_field").get(i);
+                float field_y = field_y_num.floatValue();
+                Number field_z_num = t.numberColumn("z_field").get(i);
+                float field_z = field_z_num.floatValue();
+                MagnetBlockPlacedSQL mp = new MagnetBlockPlacedSQL(dir, pos_x, pos_y, pos_z, field_x, field_y, field_z, statement);
+                mp.main();
+            }
         } else if (dir == Direction.SOUTH) {
-            mag_moment = new Vec3d(0, 0, mag_dipole_scalar);
+            Table t = Table.read().file("extra_files/pos_z.csv");
+            for (int i = 0; i < t.rowCount(); i++) {
+                int pos_x_num = (int) t.numberColumn("x").get(i);
+                int pos_y_num = (int) t.numberColumn("y").get(i);
+                int pos_z_num = (int) t.numberColumn("z").get(i);
+                int pos_x = x + pos_x_num;
+                int pos_y = y + pos_y_num;
+                int pos_z = z + pos_z_num;
+
+                Number field_x_num = t.numberColumn("x_field").get(i);
+                float field_x = field_x_num.floatValue();
+                Number field_y_num = t.numberColumn("y_field").get(i);
+                float field_y = field_y_num.floatValue();
+                Number field_z_num = t.numberColumn("z_field").get(i);
+                float field_z = field_z_num.floatValue();
+                MagnetBlockPlacedSQL mp = new MagnetBlockPlacedSQL(dir, pos_x, pos_y, pos_z, field_x, field_y, field_z, statement);
+                mp.main();
+            }
         } else if (dir == Direction.NORTH) {
-            mag_moment = new Vec3d(0, 0, -mag_dipole_scalar);
+            Table t = Table.read().file("extra_files/neg_z.csv");
+            for (int i = 0; i < t.rowCount(); i++) {
+                int pos_x_num = (int) t.numberColumn("x").get(i);
+                int pos_y_num = (int) t.numberColumn("y").get(i);
+                int pos_z_num = (int) t.numberColumn("z").get(i);
+                int pos_x = x + pos_x_num;
+                int pos_y = y + pos_y_num;
+                int pos_z = z + pos_z_num;
+
+                Number field_x_num = t.numberColumn("x_field").get(i);
+                float field_x = field_x_num.floatValue();
+                Number field_y_num = t.numberColumn("y_field").get(i);
+                float field_y = field_y_num.floatValue();
+                Number field_z_num = t.numberColumn("z_field").get(i);
+                float field_z = field_z_num.floatValue();
+                MagnetBlockPlacedSQL mp = new MagnetBlockPlacedSQL(dir, pos_x, pos_y, pos_z, field_x, field_y, field_z, statement);
+                mp.main();
+            }
         } else if (dir == Direction.UP) {
-            mag_moment = new Vec3d(0, mag_dipole_scalar, 0);
+            Table t = Table.read().file("extra_files/pos_y.csv");
+            for (int i = 0; i < t.rowCount(); i++) {
+                int pos_x_num = (int) t.numberColumn("x").get(i);
+                int pos_y_num = (int) t.numberColumn("y").get(i);
+                int pos_z_num = (int) t.numberColumn("z").get(i);
+                int pos_x = x + pos_x_num;
+                int pos_y = y + pos_y_num;
+                int pos_z = z + pos_z_num;
+
+                Number field_x_num = t.numberColumn("x_field").get(i);
+                float field_x = field_x_num.floatValue();
+                Number field_y_num = t.numberColumn("y_field").get(i);
+                float field_y = field_y_num.floatValue();
+                Number field_z_num = t.numberColumn("z_field").get(i);
+                float field_z = field_z_num.floatValue();
+                MagnetBlockPlacedSQL mp = new MagnetBlockPlacedSQL(dir, pos_x, pos_y, pos_z, field_x, field_y, field_z, statement);
+                mp.main();
+            }
         } else if (dir == Direction.DOWN) {
-            mag_moment = new Vec3d(0, -mag_dipole_scalar, 0);
-        } else {
-            mag_moment = new Vec3d(0 , 0, 0);
+            Table t = Table.read().file("extra_files/neg_y.csv");
+            for (int i = 0; i < t.rowCount(); i++) {
+                int pos_x_num = (int) t.numberColumn("x").get(i);
+                int pos_y_num = (int) t.numberColumn("y").get(i);
+                int pos_z_num = (int) t.numberColumn("z").get(i);
+                int pos_x = x + pos_x_num;
+                int pos_y = y + pos_y_num;
+                int pos_z = z + pos_z_num;
+
+                Number field_x_num = t.numberColumn("x_field").get(i);
+                float field_x = field_x_num.floatValue();
+                Number field_y_num = t.numberColumn("y_field").get(i);
+                float field_y = field_y_num.floatValue();
+                Number field_z_num = t.numberColumn("z_field").get(i);
+                float field_z = field_z_num.floatValue();
+                MagnetBlockPlacedSQL mp = new MagnetBlockPlacedSQL(dir, pos_x, pos_y, pos_z, field_x, field_y, field_z, statement);
+                mp.main();
+            }
         }
 
-        String pos_string = pos.toShortString();
-        String mag_moment_string = mag_moment.toString();
-        mag_moment_string = mag_moment_string.replace("(", "");
-        mag_moment_string = mag_moment_string.replace(")", "");
-        MagnetBlockPlacedSQL mp = new MagnetBlockPlacedSQL(pos_string, mag_moment_string);
-        mp.main();
-
         MinecraftClient mc = MinecraftClient.getInstance();
-        Text message = Text.of(pos_string + " " + mag_moment_string);
+        Text message = Text.of("Hello");
         mc.inGameHud.addChatMessage(MessageType.SYSTEM, message, mc.player.getUuid());
     }
 
