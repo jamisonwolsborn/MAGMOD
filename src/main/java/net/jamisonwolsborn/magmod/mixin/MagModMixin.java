@@ -26,7 +26,7 @@ public class MagModMixin {
             connection = DriverManager.getConnection("jdbc:sqlite:database.db");
             Statement statement = connection.createStatement();
             statement.setQueryTimeout(30);  // set timeout to 30 sec.
-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS 'mag' ('pos_x' INT, 'pos_y' INT, 'pos_z' INT, 'field_x' FLOAT, 'field_y' FLOAT, 'field_z' FLOAT, 'Timestamp' DATETIME)");
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS 'mag' (id INTEGER PRIMARY KEY AUTOINCREMENT, pos_x INT, pos_y INT, pos_z INT, field_x FLOAT, field_y FLOAT, field_z FLOAT, Timestamp DATETIME, block_id VARCHAR[255])");
         } catch (SQLException e) {
             // if the error message is "out of memory",
             // it probably means no database file is found

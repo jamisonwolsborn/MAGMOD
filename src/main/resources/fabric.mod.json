@@ -20,6 +20,9 @@
   "entrypoints": {
     "main": [
       "net.jamisonwolsborn.magmod.MagMod"
+    ],
+    "client": [
+      "net.jamisonwolsborn.magmod.MagModClient"
     ]
   },
   "mixins": [

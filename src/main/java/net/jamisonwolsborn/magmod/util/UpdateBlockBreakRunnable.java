@@ -22,7 +22,7 @@ public class UpdateBlockBreakRunnable implements java.lang.Runnable {
     public void run() {
         System.out.println("Running " + threadName);
         String pos_string = pos_.toShortString();
-        MagnetBlockBreakSQL mb = new MagnetBlockBreakSQL(pos_string);
+        MagnetBlockBreakSQL mb = new MagnetBlockBreakSQL(world_, pos_);
         mb.main();
         System.out.println("Thread " + threadName + " exiting.");
     }

@@ -1,51 +1,56 @@
 package net.jamisonwolsborn.magmod.util;
 
+import net.jamisonwolsborn.magmod.MagMod;
+import net.jamisonwolsborn.magmod.entity.MagnetBlockEntity;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.MessageType;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
+import javax.swing.text.Position;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 public class MagnetBlockBreakSQL {
-    public static String pos_string_ = null;
+    public static BlockPos pos_;
+    public static World world_;
 
-    public MagnetBlockBreakSQL(String pos_string) {
-        pos_string_ = pos_string;
+    public MagnetBlockBreakSQL(World world, BlockPos pos) {
+        world_ = world;
+        pos_ = pos;
     }
 
     public static void main() {
         Connection connection = null;
-        Statement statement = null;
         try {
             // create a database connection
             connection = DriverManager.getConnection("jdbc:sqlite:database.db");
-            statement = connection.createStatement();
-            statement.setQueryTimeout(30);
-            String sql = "DELETE FROM mag_positions WHERE pos = '" + pos_string_ + "'";
-            MinecraftClient mc = MinecraftClient.getInstance();
-            Text message = Text.of("Break Position: " + pos_string_);
-            mc.inGameHud.addChatMessage(MessageType.SYSTEM, message, mc.player.getUuid());
-            statement.executeUpdate(sql);
+            Statement statement = connection.createStatement();
+            statement.setQueryTimeout(30);  // set timeout to 30 sec.
+
+            String block_id = pos_.toShortString();
+
+            statement.executeUpdate("DELETE FROM mag WHERE block_id = '" + block_id + "';");
+
         } catch (SQLException e) {
             // if the error message is "out of memory",
             // it probably means no database file is found
-
-            MinecraftClient mc = MinecraftClient.getInstance();
-            Text message = Text.of(e.getMessage());
-            mc.inGameHud.addChatMessage(MessageType.SYSTEM, message, mc.player.getUuid());
-
-            System.err.println(e.getMessage());
+            MagMod.LOGGER.info(e.getMessage());
         } finally {
             try {
                 if (connection != null)
                     connection.close();
             } catch (SQLException e) {
                 // connection close failed.
-                System.err.println(e.getMessage());
+                MagMod.LOGGER.info(e.getMessage());
             }
         }
     }
 }
+

@@ -11,18 +11,19 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 public class MagnetBlockEntity extends BlockEntity {
-    private double mag_dipole_scalar = 1.17*1/(1.257 * Math.pow(10,-6));
     public MagnetBlockEntity(BlockPos pos, BlockState state) {
         super(MagMod.MAGNET_BLOCK_ENTITY, pos, state);
     }
-
     // Serialize the BlockEntity
     @Override
     public void writeNbt(NbtCompound tag) {
         // Save the current value of the number to the tag
-        tag.putDouble("mag_dipole_scalar", mag_dipole_scalar);
+        UUID uuid = UUID.randomUUID();
+
+        tag.putUuid("block_id", uuid);
 
         super.writeNbt(tag);
     }
@@ -31,7 +32,7 @@ public class MagnetBlockEntity extends BlockEntity {
     public void readNbt(NbtCompound tag) {
         super.readNbt(tag);
 
-        mag_dipole_scalar = tag.getDouble("mag_dipole_scalar");
+        UUID block_id = tag.getUuid("block_id");
     }
 
     @Nullable

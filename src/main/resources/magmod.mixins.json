@@ -6,7 +6,8 @@
   "mixins": [
   ],
   "client": [
-    "MagModMixin"
+    "MagModMixin",
+    "ChargedParticleMixin"
   ],
   "injectors": {
     "defaultRequire": 1

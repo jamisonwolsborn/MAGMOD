@@ -8,7 +8,6 @@ import net.minecraft.world.World;
 
 import java.sql.SQLException;
 
-import static net.jamisonwolsborn.magmod.util.MagneticField.initializeSQL;
 import static net.jamisonwolsborn.magmod.util.MagneticField.update_block_placement;
 
 public class UpdateBlockPosRunnable implements java.lang.Runnable {
@@ -22,9 +21,6 @@ public class UpdateBlockPosRunnable implements java.lang.Runnable {
         world_ = world;
         pos_ = pos;
         threadName = name;
-        MinecraftClient mc = MinecraftClient.getInstance();
-        Text message = Text.of("Creating " + threadName);
-        mc.inGameHud.addChatMessage(MessageType.SYSTEM, message, mc.player.getUuid());
         System.out.println("Creating " + threadName);
     }
 
@@ -34,7 +30,7 @@ public class UpdateBlockPosRunnable implements java.lang.Runnable {
         Text message = Text.of("Running " + threadName);
         mc.inGameHud.addChatMessage(MessageType.SYSTEM, message, mc.player.getUuid());
 
-        initializeSQL(world_, pos_);
+        batchCommitSQL.initializeSQL(world_, pos_);
 
         Text message_ = Text.of("Thread " + threadName + " exiting.");
         mc.inGameHud.addChatMessage(MessageType.SYSTEM, message_, mc.player.getUuid());

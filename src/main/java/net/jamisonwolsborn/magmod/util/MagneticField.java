@@ -35,7 +35,7 @@ public class MagneticField {
         return dir;
     }
 
-    public static Statement initializeSQL(World world, BlockPos pos) {
+    public static void initializeSQL(World world, BlockPos pos) {
         Connection connection = null;
         Statement statement = null;
         try {
@@ -59,7 +59,6 @@ public class MagneticField {
                 MagMod.LOGGER.info(e.getMessage());
             }
         }
-        return statement;
     }
 
     public static void update_block_placement(World world, BlockPos pos, Statement statement) throws SQLException {
