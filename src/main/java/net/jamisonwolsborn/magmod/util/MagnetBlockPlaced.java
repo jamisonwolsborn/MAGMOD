@@ -27,6 +27,7 @@ public class MagnetBlockPlaced {
         Direction.Axis axis = getAxis(bs);
 
         for (int i = -1; i <= 1; i++) {
+
             if (i != 0) {
                 Block block = (world.getBlockState(pos)).getBlock();
                 Block block_ = (world.getBlockState(new BlockPos(x + i, y, z))).getBlock();
